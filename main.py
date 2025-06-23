@@ -52,3 +52,4 @@ if __name__ == "__main__":
     root.geometry("300x300")
     app = LoginApp(root)
     root.mainloop()
+
