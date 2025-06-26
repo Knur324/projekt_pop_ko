@@ -9,7 +9,7 @@ class LocationEntity:
         self.name = name
         self.location = location
         self.coordinates = self.get_coordinates()
-        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1])
+        self.marker = map_widget.set_marker(self.coordinates[0], self.coordinates[1], text=self.name)
 
     def get_coordinates(self) -> list:
         url = f"https://pl.wikipedia.org/wiki/{self.location}"
@@ -26,6 +26,14 @@ class Airport(LocationEntity):
         self.staff = []
         self.clients = []
 
+    def update_marker_label(self):
+        label = f"{self.name}\n"
+        if self.staff:
+            label += "Pracownicy:\n" + "\n".join(f" - {s.name}" for s in self.staff) + "\n"
+        if self.clients:
+            label += "Klienci:\n" + "\n".join(f" - {c.name}" for c in self.clients)
+        self.marker.set_text(label)
+
 
 class Person(LocationEntity):
     def __init__(self, name, surname, location):
@@ -39,7 +47,8 @@ airports = []
 def add_airport():
     name = entry_name.get()
     location = entry_location.get()
-    airports.append(Airport(name, location))
+    airport = Airport(name, location)
+    airports.append(airport)
     refresh_list()
     clear_entries()
 
@@ -53,6 +62,7 @@ def add_staff():
     location = entry_location.get()
     person = Person(name, surname, location)
     selected_airport.staff.append(person)
+    selected_airport.update_marker_label()
     refresh_list()
     clear_entries()
 
@@ -66,6 +76,38 @@ def add_client():
     location = entry_location.get()
     person = Person(name, surname, location)
     selected_airport.clients.append(person)
+    selected_airport.update_marker_label()
+    refresh_list()
+    clear_entries()
+
+
+def edit_selected():
+    index = listbox_list.index(ACTIVE)
+    flat_list = flatten_data()
+    if index >= len(flat_list):
+        return
+    entity, typ = flat_list[index]
+    new_name = entry_name.get()
+    new_surname = entry_surname.get()
+    new_location = entry_location.get()
+    if not new_name or not new_location:
+        return
+
+    if typ == 'airport':
+        entity.name = new_name
+        entity.location = new_location
+        entity.coordinates = entity.get_coordinates()
+        entity.marker.set_position(entity.coordinates[0], entity.coordinates[1])
+        entity.update_marker_label()
+
+    elif typ in ['staff', 'client']:
+        entity.name = new_name + " " + new_surname
+        entity.surname = new_surname
+        entity.location = new_location
+        entity.coordinates = entity.get_coordinates()
+        entity.marker.set_position(entity.coordinates[0], entity.coordinates[1])
+        entity.marker.set_text(entity.name)
+
     refresh_list()
     clear_entries()
 
@@ -94,12 +136,14 @@ def delete_selected():
         for ap in airports:
             if entity in ap.staff:
                 ap.staff.remove(entity)
+                ap.update_marker_label()
                 break
     elif typ == 'client':
         entity.marker.delete()
         for ap in airports:
             if entity in ap.clients:
                 ap.clients.remove(entity)
+                ap.update_marker_label()
                 break
     refresh_list()
 
@@ -137,6 +181,7 @@ frame_map.grid(row=1, column=1)
 listbox_list = Listbox(frame_list, width=50, height=30)
 listbox_list.pack()
 Button(frame_list, text="Usuń zaznaczone", command=delete_selected).pack()
+Button(frame_list, text="Edytuj zaznaczone", command=edit_selected).pack()
 
 # Form frame
 Label(frame_form, text="Imię/Nazwa").grid(row=0, column=0)
