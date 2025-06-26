@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f3d43fb8-0d0d-4892-b315-369a008806ef" name="Changes" comment="misc">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-    </list>
+    <list default="true" id="f3d43fb8-0d0d-4892-b315-369a008806ef" name="Changes" comment="funkcja edytuj i etykiety test" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -202,7 +200,8 @@
     <MESSAGE value="wersja finalna bez elementu logowania" />
     <MESSAGE value="Untracked files prevent checkout" />
     <MESSAGE value="misc" />
-    <option name="LAST_COMMIT_MESSAGE" value="misc" />
+    <MESSAGE value="funkcja edytuj i etykiety test" />
+    <option name="LAST_COMMIT_MESSAGE" value="funkcja edytuj i etykiety test" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/projekt_pop_ko$notatnik.coverage" NAME="notatnik Coverage Results" MODIFIED="1750707745684" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
