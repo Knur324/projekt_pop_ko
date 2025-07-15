@@ -3,6 +3,9 @@ import tkintermapview
 import requests
 from bs4 import BeautifulSoup
 
+# GLOBALNA ZMIENNA FILTRA
+current_filter = None
+
 
 class LocationEntity:
     def __init__(self, name, location):
@@ -54,29 +57,39 @@ def add_airport():
 
 
 def add_staff():
-    if not airports:
+    index = listbox_list.index(ACTIVE)
+    flat_list = flatten_data()
+    if index >= len(flat_list):
         return
-    selected_airport = airports[listbox_list.index(ACTIVE)]
+    entity, typ = flat_list[index]
+    if typ != 'airport':
+        return
+
     name = entry_name.get()
     surname = entry_surname.get()
     location = entry_location.get()
     person = Person(name, surname, location)
-    selected_airport.staff.append(person)
-    selected_airport.update_marker_label()
+    entity.staff.append(person)
+    entity.update_marker_label()
     refresh_list()
     clear_entries()
 
 
 def add_client():
-    if not airports:
+    index = listbox_list.index(ACTIVE)
+    flat_list = flatten_data()
+    if index >= len(flat_list):
         return
-    selected_airport = airports[listbox_list.index(ACTIVE)]
+    entity, typ = flat_list[index]
+    if typ != 'airport':
+        return
+
     name = entry_name.get()
     surname = entry_surname.get()
     location = entry_location.get()
     person = Person(name, surname, location)
-    selected_airport.clients.append(person)
-    selected_airport.update_marker_label()
+    entity.clients.append(person)
+    entity.update_marker_label()
     refresh_list()
     clear_entries()
 
@@ -112,16 +125,6 @@ def edit_selected():
     clear_entries()
 
 
-def refresh_list():
-    listbox_list.delete(0, END)
-    for i, airport in enumerate(airports):
-        listbox_list.insert(END, f"{i + 1}. Lotnisko: {airport.name}")
-        for s in airport.staff:
-            listbox_list.insert(END, f"   - Pracownik: {s.name}")
-        for c in airport.clients:
-            listbox_list.insert(END, f"   - Klient: {c.name}")
-
-
 def delete_selected():
     index = listbox_list.index(ACTIVE)
     flat_list = flatten_data()
@@ -150,13 +153,35 @@ def delete_selected():
 
 def flatten_data():
     flat = []
-    for ap in airports:
+    filtered_airports = airports
+    if current_filter:
+        filtered_airports = [ap for ap in airports if current_filter.lower() in ap.name.lower()]
+    sorted_airports = sorted(filtered_airports, key=lambda ap: ap.name.lower())
+    for ap in sorted_airports:
         flat.append((ap, 'airport'))
-        for s in ap.staff:
+        for s in sorted(ap.staff, key=lambda x: x.name.lower()):
             flat.append((s, 'staff'))
-        for c in ap.clients:
+        for c in sorted(ap.clients, key=lambda x: x.name.lower()):
             flat.append((c, 'client'))
     return flat
+
+
+def refresh_list():
+    listbox_list.delete(0, END)
+    filtered_airports = airports
+
+    if current_filter:
+        filtered_airports = [ap for ap in airports if current_filter.lower() in ap.name.lower()]
+
+    sorted_airports = sorted(filtered_airports, key=lambda ap: ap.name.lower())
+    for i, airport in enumerate(sorted_airports):
+        listbox_list.insert(END, f"{i + 1}. Lotnisko: {airport.name}")
+        sorted_staff = sorted(airport.staff, key=lambda s: s.name.lower())
+        sorted_clients = sorted(airport.clients, key=lambda c: c.name.lower())
+        for s in sorted_staff:
+            listbox_list.insert(END, f"   - Pracownik: {s.name}")
+        for c in sorted_clients:
+            listbox_list.insert(END, f"   - Klient: {c.name}")
 
 
 def clear_entries():
@@ -165,6 +190,20 @@ def clear_entries():
     entry_location.delete(0, END)
 
 
+def apply_filter():
+    global current_filter
+    current_filter = entry_filter.get()
+    refresh_list()
+
+
+def clear_filter():
+    global current_filter
+    current_filter = None
+    entry_filter.delete(0, END)
+    refresh_list()
+
+
+# --- GUI SETUP ---
 root = Tk()
 root.geometry("1200x800")
 root.title("Airport Management")
@@ -200,6 +239,13 @@ Button(frame_form, text="Dodaj lotnisko", command=add_airport).grid(row=3, colum
 Button(frame_form, text="Dodaj pracownika", command=add_staff).grid(row=4, column=0, columnspan=2)
 Button(frame_form, text="Dodaj klienta", command=add_client).grid(row=5, column=0, columnspan=2)
 
+Label(frame_form, text="Filtruj lotnisko").grid(row=6, column=0)
+entry_filter = Entry(frame_form)
+entry_filter.grid(row=6, column=1)
+
+Button(frame_form, text="Filtruj", command=apply_filter).grid(row=7, column=0)
+Button(frame_form, text="Pokaż wszystkie", command=clear_filter).grid(row=7, column=1)
+
 # Map frame
 map_widget = tkintermapview.TkinterMapView(frame_map, width=800, height=500, corner_radius=5)
 map_widget.set_position(52.23, 21.0)
@@ -207,3 +253,4 @@ map_widget.set_zoom(6)
 map_widget.pack()
 
 root.mainloop()
+
